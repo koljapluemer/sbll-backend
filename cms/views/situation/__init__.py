@@ -4,6 +4,7 @@ from .update import situation_update
 from .delete import situation_delete
 from .export_form import situation_export_form
 from .export_download import situation_export_download
+from .download_all import situation_download_all
 
 __all__ = [
     "situation_list",
@@ -12,4 +13,5 @@ __all__ = [
     "situation_delete",
     "situation_export_form",
     "situation_export_download",
+    "situation_download_all",
 ]

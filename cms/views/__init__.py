@@ -36,6 +36,7 @@ from .situation import (
     situation_delete,
     situation_export_form,
     situation_export_download,
+    situation_download_all,
 )
 
 # API views
@@ -64,6 +65,7 @@ __all__ = [
     "situation_delete",
     "situation_export_form",
     "situation_export_download",
+    "situation_download_all",
     # API
     "api_gloss_search",
     "api_gloss_create",
