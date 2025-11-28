@@ -1,0 +1,49 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Situations | SBLL CMS{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Situations</h1>
+<div class="flex justify-end mb-4">
+  <a href="{% url 'situation_create' %}" class="btn btn-primary btn-sm flex items-center gap-2">
+    {% lucide "plus" class="w-4 h-4" %}
+    <span>Add situation</span>
+  </a>
+</div>
+<div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Glosses</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for situation in situations %}
+      <tr>
+        <td class="font-mono">{{ situation.id }}</td>
+        <td>
+          {% if situation.glosses.all %}
+            {{ situation.glosses.all|join:", " }}
+          {% else %}
+            <span class="text-light">None</span>
+          {% endif %}
+        </td>
+        <td class="text-right">
+          <div class="flex justify-end gap-2">
+            <a href="{% url 'situation_update' situation.id %}" class="btn btn-ghost btn-xs gap-1">
+              {% lucide "pencil" class="w-4 h-4" %} Edit
+            </a>
+            <a href="{% url 'situation_delete' situation.id %}" class="btn btn-ghost btn-xs text-error gap-1">
+              {% lucide "trash" class="w-4 h-4" %} Delete
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-center text-light">No situations yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

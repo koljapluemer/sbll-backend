@@ -17,3 +17,6 @@ class Gloss(models.Model):
     # content+language should be unique together
     class Meta:
         unique_together = ("content", "language")
+
+    def __str__(self):
+        return f"{self.language}: {self.content}"

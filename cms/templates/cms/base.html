@@ -1,0 +1,37 @@
+{% load lucide_tags %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SBLL CMS{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    .text-light { color: hsl(var(--bc) / 0.6); }
+    svg { width: 1rem; height: 1rem; stroke-width: 1.6; }
+    nav svg { width: 1.25rem; height: 1.25rem; }
+    .btn svg { width: 1rem; height: 1rem; }
+    .link svg { width: 1rem; height: 1rem; }
+  </style>
+</head>
+<body class="bg-base-200 min-h-screen text-base">
+  <header class="bg-base-100 border-b border-base-300">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center gap-3">
+      <a href="{% url 'home' %}" class="flex items-center gap-2 text-xl font-semibold">
+        {% lucide "book-open" class="w-5 h-5" %}
+        <span>SBLL CMS</span>
+      </a>
+      <nav class="flex items-center gap-3 ml-auto text-sm">
+        <a href="{% url 'language_list' %}" class="link link-hover">Languages</a>
+        <a href="{% url 'gloss_list' %}" class="link link-hover">Glosses</a>
+        <a href="{% url 'situation_list' %}" class="link link-hover">Situations</a>
+      </nav>
+    </div>
+  </header>
+  <main class="max-w-6xl mx-auto px-6 py-6">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

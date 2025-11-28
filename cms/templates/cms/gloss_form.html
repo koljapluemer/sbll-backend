@@ -1,0 +1,96 @@
+{% extends "cms/base.html" %}
+{% block title %}{% if mode == 'edit' %}Edit Gloss{% else %}Add Gloss{% endif %} | SBLL CMS{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">{% if mode == 'edit' %}Edit gloss{% else %}Add gloss{% endif %}</h1>
+{% if errors %}
+<div class="alert alert-error mb-4">
+  <ul class="list-disc list-inside">
+    {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+<form method="post" class="space-y-4">
+  {% csrf_token %}
+  <fieldset class="fieldset w-full">
+    <label for="content" class="label">Content</label>
+    <textarea id="content" name="content" class="textarea textarea-bordered w-full" rows="3" required>{{ data.content }}</textarea>
+  </fieldset>
+  <fieldset class="fieldset">
+    <label for="language" class="label">Language</label>
+    <select id="language" name="language" class="select select-bordered w-full" required>
+      <option value="" disabled {% if not data.language %}selected{% endif %}>Select language</option>
+      {% for language in languages %}
+        <option value="{{ language.pk }}" {% if data.language and data.language.pk == language.pk %}selected{% endif %}>{{ language }}</option>
+      {% endfor %}
+    </select>
+  </fieldset>
+  <fieldset class="fieldset">
+    <label for="transcriptions" class="label">Transcriptions (one per line)</label>
+    <textarea id="transcriptions" name="transcriptions" class="textarea textarea-bordered" rows="4" placeholder="IPA&#10;Romanization">{{ data.transcriptions_raw }}</textarea>
+  </fieldset>
+  {% with rel=data.relations %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <fieldset class="fieldset">
+      <label for="contains" class="label">Contains</label>
+      <select id="contains" name="contains" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.contains and g in rel.contains %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset">
+      <label for="near_synonyms" class="label">Near synonyms</label>
+      <select id="near_synonyms" name="near_synonyms" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.near_synonyms and g in rel.near_synonyms %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset">
+      <label for="near_homophones" class="label">Near homophones</label>
+      <select id="near_homophones" name="near_homophones" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.near_homophones and g in rel.near_homophones %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset">
+      <label for="translations" class="label">Translations</label>
+      <select id="translations" name="translations" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.translations and g in rel.translations %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset">
+      <label for="clarifies_usage" class="label">Clarifies usage of</label>
+      <select id="clarifies_usage" name="clarifies_usage" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.clarifies_usage and g in rel.clarifies_usage %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset">
+      <label for="to_be_differentiated_from" class="label">To be differentiated from</label>
+      <select id="to_be_differentiated_from" name="to_be_differentiated_from" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.to_be_differentiated_from and g in rel.to_be_differentiated_from %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset md:col-span-2">
+      <label for="collocations" class="label">Collocations</label>
+      <select id="collocations" name="collocations" multiple class="select select-bordered w-full" size="6">
+        {% for g in gloss_choices %}
+          <option value="{{ g.pk }}" {% if rel.collocations and g in rel.collocations %}selected{% endif %}>{{ g.content }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+  </div>
+  {% endwith %}
+  <div class="flex gap-2">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'gloss_list' %}" class="btn btn-ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

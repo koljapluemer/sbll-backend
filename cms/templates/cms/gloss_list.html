@@ -1,0 +1,45 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Glosses | SBLL CMS{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Glosses</h1>
+<div class="flex justify-end mb-4">
+  <a href="{% url 'gloss_create' %}" class="btn btn-primary btn-sm flex items-center gap-2">
+    {% lucide "plus" class="w-4 h-4" %}
+    <span>Add gloss</span>
+  </a>
+</div>
+<div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Content</th>
+        <th>Language</th>
+        <th>Transcriptions</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for gloss in glosses %}
+      <tr>
+        <td class="max-w-sm">{{ gloss.content }}</td>
+        <td>{{ gloss.language }}</td>
+        <td>{{ gloss.transcriptions|join:", "|default:"-" }}</td>
+        <td class="text-right">
+          <div class="flex justify-end gap-2">
+            <a href="{% url 'gloss_update' gloss.id %}" class="btn btn-ghost btn-xs gap-1">
+              {% lucide "pencil" class="w-4 h-4" %} Edit
+            </a>
+            <a href="{% url 'gloss_delete' gloss.id %}" class="btn btn-ghost btn-xs text-error gap-1">
+              {% lucide "trash" class="w-4 h-4" %} Delete
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-light">No glosses yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

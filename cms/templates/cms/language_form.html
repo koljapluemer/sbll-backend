@@ -1,0 +1,31 @@
+{% extends "cms/base.html" %}
+{% block title %}{% if mode == 'edit' %}Edit Language{% else %}Add Language{% endif %} | SBLL CMS{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">{% if mode == 'edit' %}Edit language{% else %}Add language{% endif %}</h1>
+{% if errors %}
+<div class="alert alert-error mb-4">
+  <ul class="list-disc list-inside">
+    {% for error in errors %}<li>{{ error }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+<form method="post" class="space-y-4">
+  {% csrf_token %}
+  <fieldset class="fieldset">
+    <label for="iso" class="label">ISO</label>
+    <input type="text" id="iso" name="iso" value="{{ data.iso }}" class="input input-bordered" {% if mode == 'edit' %}disabled{% endif %}>
+  </fieldset>
+  <fieldset class="fieldset">
+    <label for="name" class="label">Name</label>
+    <input type="text" id="name" name="name" value="{{ data.name }}" class="input input-bordered" required>
+  </fieldset>
+  <fieldset class="fieldset">
+    <label for="short" class="label">Short (optional)</label>
+    <input type="text" id="short" name="short" value="{{ data.short }}" class="input input-bordered">
+  </fieldset>
+  <div class="flex gap-2">
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'language_list' %}" class="btn btn-ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

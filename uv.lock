@@ -26,15 +26,28 @@ wheels = [
 ]
 
 [[package]]
+name = "django-lucide-icons"
+version = "0.2.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9e/6f/c9768c0c80f4434cd8d2fe9a2417f1974846b26b226bedbb949fdbaef3b1/django_lucide_icons-0.2.2.tar.gz", hash = "sha256:97e9a76155ce8b0ed9d59ecc5e218907076a398b84f0dc8f3ea24fc1598189dd", size = 15743, upload-time = "2024-06-23T12:33:23.1Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8e/a3/29e84da09c4387d18f704ffd4ec7f6e55d1fc000d9cc82b9bc2b12652813/django_lucide_icons-0.2.2-py2.py3-none-any.whl", hash = "sha256:7f358e85d0ea6a479dd4d57b5ad0cc0c44f2dd2816f5d62305dff3e4fef92c60", size = 7340, upload-time = "2024-06-23T12:33:19.514Z" },
+]
+
+[[package]]
 name = "sbll-backend"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "django" },
+    { name = "django-lucide-icons" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "django", specifier = ">=5.2.8" }]
+requires-dist = [
+    { name = "django", specifier = ">=5.2.8" },
+    { name = "django-lucide-icons", specifier = ">=0.2.2" },
+]
 
 [[package]]
 name = "sqlparse"

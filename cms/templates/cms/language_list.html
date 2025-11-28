@@ -1,0 +1,45 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Languages | SBLL CMS{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Languages</h1>
+<div class="flex justify-end mb-4">
+  <a href="{% url 'language_create' %}" class="btn btn-primary btn-sm flex items-center gap-2">
+    {% lucide "plus" class="w-4 h-4" %}
+    <span>Add language</span>
+  </a>
+</div>
+<div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ISO</th>
+        <th>Name</th>
+        <th>Short</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for language in languages %}
+      <tr>
+        <td class="font-mono">{{ language.iso }}</td>
+        <td>{{ language.name }}</td>
+        <td>{{ language.short|default:"-" }}</td>
+        <td class="text-right">
+          <div class="flex justify-end gap-2">
+            <a href="{% url 'language_update' language.iso %}" class="btn btn-ghost btn-xs gap-1">
+              {% lucide "pencil" class="w-4 h-4" %} Edit
+            </a>
+            <a href="{% url 'language_delete' language.iso %}" class="btn btn-ghost btn-xs text-error gap-1">
+              {% lucide "trash" class="w-4 h-4" %} Delete
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-light">No languages yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
