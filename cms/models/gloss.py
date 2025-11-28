@@ -20,3 +20,11 @@ class Gloss(models.Model):
 
     def __str__(self):
         return f"{self.language}: {self.content}"
+
+    def get_compound_key(self):
+        """
+        Returns a compound key for cross-referencing glosses without using internal IDs.
+        Format: "{language_iso}:{content}"
+        Example: "en:hello", "de:hallo"
+        """
+        return f"{self.language.iso}:{self.content}"
