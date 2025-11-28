@@ -23,6 +23,10 @@
     <label for="short" class="label">Short (optional)</label>
     <input type="text" id="short" name="short" value="{{ data.short }}" class="input input-bordered">
   </fieldset>
+  <fieldset class="fieldset">
+    <label for="ai_note" class="label">AI Note (optional)</label>
+    <textarea id="ai_note" name="ai_note" class="textarea textarea-bordered" rows="3">{{ data.ai_note }}</textarea>
+  </fieldset>
   <div class="flex gap-2">
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{% url 'language_list' %}" class="btn btn-ghost">Cancel</a>

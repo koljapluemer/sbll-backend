@@ -22,6 +22,7 @@ def _parse_language_payload(request, instance=None):
     iso = request.POST.get("iso", "").strip()
     name = request.POST.get("name", "").strip()
     short = request.POST.get("short", "").strip() or None
+    ai_note = request.POST.get("ai_note", "").strip()
 
     if not instance and not iso:
         errors.append("ISO code is required.")
@@ -34,12 +35,13 @@ def _parse_language_payload(request, instance=None):
         "iso": iso if iso else (instance.iso if instance else ""),
         "name": name,
         "short": short,
+        "ai_note": ai_note,
     }
     return payload, errors
 
 
 def language_create(request):
-    initial = {"iso": "", "name": "", "short": ""}
+    initial = {"iso": "", "name": "", "short": "", "ai_note": ""}
     if request.method == "POST":
         payload, errors = _parse_language_payload(request)
         if not errors:
@@ -65,6 +67,7 @@ def language_update(request, pk):
         if not errors:
             language.name = payload["name"]
             language.short = payload["short"]
+            language.ai_note = payload["ai_note"]
             language.save()
             return redirect("language_list")
         return render(
@@ -73,7 +76,7 @@ def language_update(request, pk):
             {"data": payload, "errors": errors, "mode": "edit", "language": language},
         )
 
-    data = {"iso": language.iso, "name": language.name, "short": language.short or ""}
+    data = {"iso": language.iso, "name": language.name, "short": language.short or "", "ai_note": language.ai_note or ""}
     return render(
         request,
         "cms/language_form.html",

@@ -16,6 +16,7 @@
         <th>ISO</th>
         <th>Name</th>
         <th>Short</th>
+        <th>AI Note</th>
         <th class="text-right">Actions</th>
       </tr>
     </thead>
@@ -25,6 +26,7 @@
         <td class="font-mono">{{ language.iso }}</td>
         <td>{{ language.name }}</td>
         <td>{{ language.short|default:"-" }}</td>
+        <td>{{ language.ai_note|default:"-" }}</td>
         <td class="text-right">
           <div class="flex justify-end gap-2">
             <a href="{% url 'language_update' language.iso %}" class="btn btn-ghost btn-xs gap-1">
@@ -37,7 +39,7 @@
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="4" class="text-center text-light">No languages yet.</td></tr>
+      <tr><td colspan="5" class="text-center text-light">No languages yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
