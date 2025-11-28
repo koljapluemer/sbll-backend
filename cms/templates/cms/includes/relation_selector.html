@@ -1,0 +1,73 @@
+<div class="relation-selector-wrapper">
+  {{ initial|json_script:initial_id }}
+  <div class="relation-selector space-y-2" data-selector-id="{{ field_name }}">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold">{{ field_label|default:field_name|capfirst }}</h2>
+    </div>
+    <div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Content</th>
+            <th>Language</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="selected-{{ field_name }}">
+          <!-- Will be populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex flex-wrap items-start gap-2">
+      <div class="relative w-full md:w-auto md:flex-1">
+        <input
+          type="text"
+          id="search-{{ field_name }}"
+          class="input input-bordered w-full"
+          placeholder="Search and attach..."
+        >
+        <div
+          id="results-{{ field_name }}"
+          class="absolute z-10 mt-1 w-full bg-base-100 border border-base-300 rounded shadow"
+          style="display: none;"
+        >
+          <!-- Will be populated by JS -->
+        </div>
+      </div>
+      <button type="button" id="btn-create-{{ field_name }}" class="btn">Attach new</button>
+    </div>
+
+    <div id="modal-{{ field_name }}" class="modal">
+      <div class="modal-box space-y-4">
+        <h3 class="font-semibold text-lg">Create and attach</h3>
+        <div class="space-y-3">
+          <label class="label" for="new-content-{{ field_name }}">Content</label>
+          <input id="new-content-{{ field_name }}" type="text" class="input input-bordered w-full">
+          <label class="label" for="new-language-{{ field_name }}">Language</label>
+          <select id="new-language-{{ field_name }}" class="select select-bordered w-full">
+            <!-- Will be populated by JS -->
+          </select>
+          <div id="create-error-{{ field_name }}" class="text-error text-sm" style="display: none;"></div>
+        </div>
+        <div class="modal-action">
+          <button type="button" id="btn-cancel-{{ field_name }}" class="btn">Cancel</button>
+          <button type="button" id="btn-submit-{{ field_name }}" class="btn btn-primary">Create & attach</button>
+        </div>
+      </div>
+      <div id="modal-backdrop-{{ field_name }}" class="modal-backdrop"></div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      new RelationSelector({
+        fieldName: '{{ field_name }}',
+        searchUrl: '{{ search_url }}',
+        createUrl: '{{ create_url }}',
+        initial: JSON.parse(document.getElementById('{{ initial_id }}').textContent),
+        languages: JSON.parse(document.getElementById('shared-languages').textContent),
+      });
+    });
+  </script>
+</div>

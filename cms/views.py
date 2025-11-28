@@ -1,4 +1,9 @@
+import json
+
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET, require_POST
+from django.urls import reverse
 
 from .models import Gloss, Language, Situation
 
@@ -149,7 +154,9 @@ def _gloss_form_payload(request, instance=None):
 
 def gloss_create(request):
     languages = Language.objects.order_by("name")
-    gloss_choices = Gloss.objects.order_by("content")
+    languages_serialized = _serialize_languages(languages)
+    gloss_search_url = reverse("api_gloss_search")
+    gloss_create_url = reverse("api_gloss_create")
     empty = {
         "content": "",
         "language": None,
@@ -182,7 +189,10 @@ def gloss_create(request):
                 "data": payload,
                 "errors": errors,
                 "languages": languages,
-                "gloss_choices": gloss_choices,
+                "languages_serialized": languages_json,
+                "relations_serialized": _relations_json(payload["relations"]),
+                "gloss_search_url": gloss_search_url,
+                "gloss_create_url": gloss_create_url,
                 "mode": "create",
             },
         )
@@ -194,7 +204,10 @@ def gloss_create(request):
             "data": empty,
             "errors": [],
             "languages": languages,
-            "gloss_choices": gloss_choices,
+            "languages_serialized": languages_json,
+            "relations_serialized": _relations_json(empty["relations"]),
+            "gloss_search_url": gloss_search_url,
+            "gloss_create_url": gloss_create_url,
             "mode": "create",
         },
     )
@@ -203,8 +216,9 @@ def gloss_create(request):
 def gloss_update(request, pk):
     gloss = get_object_or_404(Gloss, pk=pk)
     languages = Language.objects.order_by("name")
-    gloss_choices = Gloss.objects.exclude(pk=gloss.pk).order_by("content")
-
+    languages_serialized = _serialize_languages(languages)
+    gloss_search_url = reverse("api_gloss_search")
+    gloss_create_url = reverse("api_gloss_create")
     if request.method == "POST":
         payload, errors = _gloss_form_payload(request, instance=gloss)
         if not errors:
@@ -222,7 +236,10 @@ def gloss_update(request, pk):
                 "data": payload,
                 "errors": errors,
                 "languages": languages,
-                "gloss_choices": gloss_choices,
+                "languages_serialized": languages_json,
+                "relations_serialized": _relations_json(payload["relations"]),
+                "gloss_search_url": gloss_search_url,
+                "gloss_create_url": gloss_create_url,
                 "mode": "edit",
                 "gloss": gloss,
             },
@@ -249,7 +266,10 @@ def gloss_update(request, pk):
             "data": data,
             "errors": [],
             "languages": languages,
-            "gloss_choices": gloss_choices,
+            "languages_serialized": languages_json,
+            "relations_serialized": _relations_json(data["relations"]),
+            "gloss_search_url": gloss_search_url,
+            "gloss_create_url": gloss_create_url,
             "mode": "edit",
             "gloss": gloss,
         },
@@ -293,6 +313,10 @@ def _parse_situation_payload(request, instance=None):
 
 def situation_create(request):
     glosses = Gloss.objects.order_by("content")
+    languages = Language.objects.order_by("name")
+    languages_serialized = _serialize_languages(languages)
+    gloss_search_url = reverse("api_gloss_search")
+    gloss_create_url = reverse("api_gloss_create")
     empty = {"id": "", "glosses": []}
     if request.method == "POST":
         payload, errors = _parse_situation_payload(request)
@@ -303,19 +327,43 @@ def situation_create(request):
         return render(
             request,
             "cms/situation_form.html",
-            {"data": payload, "errors": errors, "mode": "create", "glosses": glosses},
+            {
+                "data": payload,
+                "errors": errors,
+                "mode": "create",
+                "glosses": glosses,
+                "languages": languages,
+                "languages_serialized": languages_serialized,
+                "glosses_serialized": _serialize_glosses(payload["glosses"]),
+                "gloss_search_url": gloss_search_url,
+                "gloss_create_url": gloss_create_url,
+            },
         )
 
     return render(
         request,
         "cms/situation_form.html",
-        {"data": empty, "errors": [], "mode": "create", "glosses": glosses},
+        {
+            "data": empty,
+            "errors": [],
+            "mode": "create",
+            "glosses": glosses,
+            "languages": languages,
+            "languages_serialized": languages_serialized,
+            "glosses_serialized": _serialize_glosses(empty["glosses"]),
+            "gloss_search_url": gloss_search_url,
+            "gloss_create_url": gloss_create_url,
+        },
     )
 
 
 def situation_update(request, pk):
     situation = get_object_or_404(Situation, pk=pk)
     glosses = Gloss.objects.order_by("content")
+    languages = Language.objects.order_by("name")
+    languages_serialized = _serialize_languages(languages)
+    gloss_search_url = reverse("api_gloss_search")
+    gloss_create_url = reverse("api_gloss_create")
 
     if request.method == "POST":
         payload, errors = _parse_situation_payload(request, instance=situation)
@@ -330,6 +378,11 @@ def situation_update(request, pk):
                 "errors": errors,
                 "mode": "edit",
                 "glosses": glosses,
+                "languages": languages,
+                "languages_serialized": languages_serialized,
+                "glosses_serialized": _serialize_glosses(payload["glosses"]),
+                "gloss_search_url": gloss_search_url,
+                "gloss_create_url": gloss_create_url,
                 "situation": situation,
             },
         )
@@ -343,9 +396,72 @@ def situation_update(request, pk):
             "errors": [],
             "mode": "edit",
             "glosses": glosses,
+            "languages": languages,
+            "languages_serialized": languages_serialized,
+            "glosses_serialized": _serialize_glosses(data["glosses"]),
+            "gloss_search_url": gloss_search_url,
+            "gloss_create_url": gloss_create_url,
             "situation": situation,
         },
     )
+
+
+def _serialize_gloss(gloss):
+    return {
+        "id": gloss.pk,
+        "label": f"{gloss.language.iso}: {gloss.content}",
+        "content": gloss.content,
+        "language_iso": gloss.language.iso,
+    }
+
+
+def _serialize_glosses(glosses):
+    return [_serialize_gloss(g) for g in glosses]
+
+
+def _serialize_relations(relations):
+    return {key: _serialize_glosses(items) for key, items in relations.items()}
+
+
+def _serialize_languages(languages):
+    return [
+        {
+            "id": lang.pk,
+            "label": str(lang),
+            "iso": lang.iso,
+        }
+        for lang in languages
+    ]
+
+
+def _relations_json(relations):
+    return {key: _serialize_glosses(items) for key, items in relations.items()}
+
+
+@require_GET
+def api_gloss_search(request):
+    query = request.GET.get("q", "").strip()
+    qs = Gloss.objects.select_related("language")
+    if query:
+        qs = qs.filter(content__icontains=query)
+    results = [_serialize_gloss(gloss) for gloss in qs.order_by("content")[:10]]
+    return JsonResponse({"results": results})
+
+
+@require_POST
+def api_gloss_create(request):
+    content = request.POST.get("content", "").strip()
+    language_iso = request.POST.get("language", "").strip()
+    if not content:
+        return JsonResponse({"error": "Content is required."}, status=400)
+    if not language_iso:
+        return JsonResponse({"error": "Language is required."}, status=400)
+    language = Language.objects.filter(pk=language_iso).first()
+    if not language:
+        return JsonResponse({"error": "Language not found."}, status=404)
+
+    gloss = Gloss.objects.create(content=content, language=language, transcriptions=[])
+    return JsonResponse({"gloss": _serialize_gloss(gloss)})
 
 
 def situation_delete(request, pk):

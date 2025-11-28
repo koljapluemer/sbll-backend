@@ -16,4 +16,6 @@ urlpatterns = [
     path("situations/add/", views.situation_create, name="situation_create"),
     path("situations/<str:pk>/edit/", views.situation_update, name="situation_update"),
     path("situations/<str:pk>/delete/", views.situation_delete, name="situation_delete"),
+    path("api/glosses/search/", views.api_gloss_search, name="api_gloss_search"),
+    path("api/glosses/create/", views.api_gloss_create, name="api_gloss_create"),
 ]

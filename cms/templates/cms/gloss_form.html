@@ -1,6 +1,7 @@
 {% extends "cms/base.html" %}
 {% block title %}{% if mode == 'edit' %}Edit Gloss{% else %}Add Gloss{% endif %} | SBLL CMS{% endblock %}
 {% block content %}
+{{ languages_serialized|json_script:"shared-languages" }}
 <h1 class="text-2xl font-semibold mb-4">{% if mode == 'edit' %}Edit gloss{% else %}Add gloss{% endif %}</h1>
 {% if errors %}
 <div class="alert alert-error mb-4">
@@ -28,66 +29,15 @@
     <label for="transcriptions" class="label">Transcriptions (one per line)</label>
     <textarea id="transcriptions" name="transcriptions" class="textarea textarea-bordered" rows="4" placeholder="IPA&#10;Romanization">{{ data.transcriptions_raw }}</textarea>
   </fieldset>
-  {% with rel=data.relations %}
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <fieldset class="fieldset">
-      <label for="contains" class="label">Contains</label>
-      <select id="contains" name="contains" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.contains and g in rel.contains %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
-    <fieldset class="fieldset">
-      <label for="near_synonyms" class="label">Near synonyms</label>
-      <select id="near_synonyms" name="near_synonyms" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.near_synonyms and g in rel.near_synonyms %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
-    <fieldset class="fieldset">
-      <label for="near_homophones" class="label">Near homophones</label>
-      <select id="near_homophones" name="near_homophones" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.near_homophones and g in rel.near_homophones %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
-    <fieldset class="fieldset">
-      <label for="translations" class="label">Translations</label>
-      <select id="translations" name="translations" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.translations and g in rel.translations %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
-    <fieldset class="fieldset">
-      <label for="clarifies_usage" class="label">Clarifies usage of</label>
-      <select id="clarifies_usage" name="clarifies_usage" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.clarifies_usage and g in rel.clarifies_usage %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
-    <fieldset class="fieldset">
-      <label for="to_be_differentiated_from" class="label">To be differentiated from</label>
-      <select id="to_be_differentiated_from" name="to_be_differentiated_from" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.to_be_differentiated_from and g in rel.to_be_differentiated_from %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
-    <fieldset class="fieldset md:col-span-2">
-      <label for="collocations" class="label">Collocations</label>
-      <select id="collocations" name="collocations" multiple class="select select-bordered w-full" size="6">
-        {% for g in gloss_choices %}
-          <option value="{{ g.pk }}" {% if rel.collocations and g in rel.collocations %}selected{% endif %}>{{ g.content }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
+  <div class="space-y-6">
+    {% include "cms/includes/relation_selector.html" with field_name="contains" field_label="Contains" initial=relations_serialized.contains search_url=gloss_search_url create_url=gloss_create_url initial_id="data-contains" %}
+    {% include "cms/includes/relation_selector.html" with field_name="near_synonyms" field_label="Near synonyms" initial=relations_serialized.near_synonyms search_url=gloss_search_url create_url=gloss_create_url initial_id="data-near-synonyms" %}
+    {% include "cms/includes/relation_selector.html" with field_name="near_homophones" field_label="Near homophones" initial=relations_serialized.near_homophones search_url=gloss_search_url create_url=gloss_create_url initial_id="data-near-homophones" %}
+    {% include "cms/includes/relation_selector.html" with field_name="translations" field_label="Translations" initial=relations_serialized.translations search_url=gloss_search_url create_url=gloss_create_url initial_id="data-translations" %}
+    {% include "cms/includes/relation_selector.html" with field_name="clarifies_usage" field_label="Clarifies usage of" initial=relations_serialized.clarifies_usage search_url=gloss_search_url create_url=gloss_create_url initial_id="data-clarifies-usage" %}
+    {% include "cms/includes/relation_selector.html" with field_name="to_be_differentiated_from" field_label="To be differentiated from" initial=relations_serialized.to_be_differentiated_from search_url=gloss_search_url create_url=gloss_create_url initial_id="data-to-be-differentiated-from" %}
+    {% include "cms/includes/relation_selector.html" with field_name="collocations" field_label="Collocations" initial=relations_serialized.collocations search_url=gloss_search_url create_url=gloss_create_url initial_id="data-collocations" %}
   </div>
-  {% endwith %}
   <div class="flex gap-2">
     <button type="submit" class="btn btn-primary">Save</button>
     <a href="{% url 'gloss_list' %}" class="btn btn-ghost">Cancel</a>
