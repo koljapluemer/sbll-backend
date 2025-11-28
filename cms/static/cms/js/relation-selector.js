@@ -12,27 +12,19 @@ class RelationSelector {
     this.loading = false;
     this.isOpen = false;
     this.highlighted = 0;
-    this.openCreate = false;
-    this.newContent = '';
-    this.newLanguage = '';
-    this.createError = '';
-    this.creating = false;
+    this.selectedLanguage = this.getStoredLanguage() || 'eng';
+    this.submitting = false;
 
     // Debounce timer
     this.searchDebounce = null;
 
     // Get DOM elements
     this.selectedTableBody = document.getElementById(`selected-${this.fieldName}`);
-    this.searchInput = document.getElementById(`search-${this.fieldName}`);
+    this.languageSelect = document.getElementById(`language-${this.fieldName}`);
+    this.input = document.getElementById(`input-${this.fieldName}`);
     this.resultsContainer = document.getElementById(`results-${this.fieldName}`);
-    this.modal = document.getElementById(`modal-${this.fieldName}`);
-    this.newContentInput = document.getElementById(`new-content-${this.fieldName}`);
-    this.newLanguageSelect = document.getElementById(`new-language-${this.fieldName}`);
-    this.createErrorDiv = document.getElementById(`create-error-${this.fieldName}`);
-    this.btnCreate = document.getElementById(`btn-create-${this.fieldName}`);
-    this.btnCancel = document.getElementById(`btn-cancel-${this.fieldName}`);
     this.btnSubmit = document.getElementById(`btn-submit-${this.fieldName}`);
-    this.modalBackdrop = document.getElementById(`modal-backdrop-${this.fieldName}`);
+    this.errorDiv = document.getElementById(`error-${this.fieldName}`);
 
     this.init();
   }
@@ -41,29 +33,299 @@ class RelationSelector {
     // Populate language dropdown
     this.renderLanguageOptions();
 
+    // Set stored/default language
+    this.languageSelect.value = this.selectedLanguage;
+    this.onLanguageChange(); // Enable input if language selected
+
     // Initial render
     this.renderSelectedTable();
 
     // Attach event listeners
-    this.searchInput.addEventListener('input', () => this.handleSearchInput());
-    this.searchInput.addEventListener('focus', () => this.handleSearchFocus());
-    this.searchInput.addEventListener('keydown', (e) => this.handleSearchKeydown(e));
-    this.searchInput.addEventListener('blur', () => setTimeout(() => this.handleSearchBlur(), 200));
-
-    this.btnCreate.addEventListener('click', () => this.openCreateModal());
-    this.btnCancel.addEventListener('click', () => this.closeCreateModal());
-    this.btnSubmit.addEventListener('click', () => this.createAndAttach());
-    this.modalBackdrop.addEventListener('click', () => this.closeCreateModal());
+    this.languageSelect.addEventListener('change', () => this.onLanguageChange());
+    this.input.addEventListener('input', () => this.handleInputChange());
+    this.input.addEventListener('focus', () => this.handleInputFocus());
+    this.input.addEventListener('keydown', (e) => this.handleInputKeydown(e));
+    this.input.addEventListener('blur', () => setTimeout(() => this.handleInputBlur(), 200));
+    this.btnSubmit.addEventListener('click', () => this.handleSubmit());
   }
 
   renderLanguageOptions() {
-    this.newLanguageSelect.innerHTML = '<option value="">Select language</option>';
+    this.languageSelect.innerHTML = '<option value="">Language...</option>';
     this.languages.forEach(lang => {
       const option = document.createElement('option');
       option.value = lang.id;
-      option.textContent = lang.label;
-      this.newLanguageSelect.appendChild(option);
+      option.textContent = `${lang.label} (${lang.id})`;
+      this.languageSelect.appendChild(option);
     });
+  }
+
+  onLanguageChange() {
+    this.selectedLanguage = this.languageSelect.value;
+
+    if (this.selectedLanguage) {
+      // Enable input
+      this.input.disabled = false;
+      this.input.focus();
+
+      // Store preference
+      this.storeLanguage(this.selectedLanguage);
+
+      // Re-run search if there's content
+      if (this.query) {
+        this.search();
+      }
+    } else {
+      // Disable input and submit
+      this.input.disabled = true;
+      this.btnSubmit.disabled = true;
+      this.query = '';
+      this.input.value = '';
+      this.results = [];
+      this.isOpen = false;
+      this.renderSearchResults();
+    }
+
+    this.updateSubmitButton();
+  }
+
+  storeLanguage(languageIso) {
+    try {
+      document.cookie = `glossLanguage=${languageIso}; path=/; max-age=31536000`; // 1 year
+    } catch (e) {
+      console.warn('Could not store language preference:', e);
+    }
+  }
+
+  getStoredLanguage() {
+    const cookie = this.getCookie('glossLanguage');
+    if (cookie && this.languages.find(lang => lang.id === cookie)) {
+      return cookie;
+    }
+    return null;
+  }
+
+  handleInputChange() {
+    this.query = this.input.value;
+
+    // Clear error
+    this.errorDiv.style.display = 'none';
+
+    // Update submit button
+    this.updateSubmitButton();
+
+    // Debounce search
+    clearTimeout(this.searchDebounce);
+    this.searchDebounce = setTimeout(() => {
+      this.search();
+    }, 200);
+  }
+
+  handleInputFocus() {
+    if (this.results.length > 0) {
+      this.isOpen = true;
+      this.renderSearchResults();
+    }
+  }
+
+  handleInputBlur() {
+    this.isOpen = false;
+    this.renderSearchResults();
+  }
+
+  handleInputKeydown(e) {
+    if (!this.isOpen) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.handleSubmit();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      this.highlighted = Math.min(this.highlighted + 1, this.results.length - 1);
+      this.renderSearchResults();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      this.highlighted = Math.max(this.highlighted - 1, 0);
+      this.renderSearchResults();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (this.results[this.highlighted]) {
+        this.prefillFromResult(this.results[this.highlighted]);
+      } else {
+        this.handleSubmit();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      this.closeSearchResults();
+    }
+  }
+
+  updateSubmitButton() {
+    const hasContent = this.query.trim().length > 0;
+    const hasLanguage = this.selectedLanguage !== '';
+    this.btnSubmit.disabled = !hasContent || !hasLanguage || this.submitting;
+  }
+
+  async search() {
+    const term = this.query.trim();
+
+    if (!term || !this.selectedLanguage) {
+      this.results = [];
+      this.isOpen = false;
+      this.renderSearchResults();
+      return;
+    }
+
+    this.loading = true;
+    this.isOpen = true;
+    this.renderSearchResults();
+
+    try {
+      const params = new URLSearchParams({
+        q: term,
+        language: this.selectedLanguage
+      });
+
+      const response = await fetch(`${this.searchUrl}?${params}`, {
+        credentials: 'same-origin'
+      });
+      const data = await response.json();
+      this.results = data.results || [];
+      this.highlighted = 0;
+    } catch (error) {
+      console.error('Search failed:', error);
+      this.results = [];
+    } finally {
+      this.loading = false;
+      this.renderSearchResults();
+    }
+  }
+
+  renderSearchResults() {
+    if (!this.isOpen) {
+      this.resultsContainer.style.display = 'none';
+      return;
+    }
+
+    this.resultsContainer.style.display = 'block';
+
+    if (this.loading) {
+      this.resultsContainer.innerHTML = '<div class="px-3 py-2 text-sm text-light">Searching...</div>';
+      return;
+    }
+
+    if (this.results.length === 0) {
+      this.resultsContainer.innerHTML = '<div class="px-3 py-2 text-sm text-light">No matches. Click Attach to create new.</div>';
+      return;
+    }
+
+    this.resultsContainer.innerHTML = this.results.map((item, idx) => `
+      <button
+        type="button"
+        class="w-full text-left px-3 py-2 hover:bg-base-200 flex justify-between items-center ${idx === this.highlighted ? 'bg-base-200' : ''}"
+        data-prefill-id="${item.id}"
+      >
+        <span>${this.escapeHtml(item.content)}</span>
+        <span class="badge badge-ghost">${this.escapeHtml(item.language_iso)}</span>
+      </button>
+    `).join('');
+
+    // Attach prefill listeners
+    this.resultsContainer.querySelectorAll('[data-prefill-id]').forEach((btn, idx) => {
+      btn.addEventListener('click', () => {
+        const item = this.results[idx];
+        if (item) this.prefillFromResult(item);
+      });
+      btn.addEventListener('mouseenter', () => {
+        this.highlighted = idx;
+        this.renderSearchResults();
+      });
+    });
+  }
+
+  closeSearchResults() {
+    this.results = [];
+    this.isOpen = false;
+    this.highlighted = 0;
+    this.renderSearchResults();
+  }
+
+  prefillFromResult(item) {
+    this.query = item.content;
+    this.input.value = item.content;
+    this.closeSearchResults();
+    this.updateSubmitButton();
+    // Keep focus on input so user can edit if needed
+    this.input.focus();
+  }
+
+  async handleSubmit() {
+    const content = this.query.trim();
+    const language = this.selectedLanguage;
+
+    if (!content || !language) {
+      return;
+    }
+
+    // Check if already attached
+    if (this.selected.find(s => s.content === content && s.language_iso === language)) {
+      this.showError('This gloss is already attached.');
+      this.showToast('This gloss is already attached.', 'warning');
+      return;
+    }
+
+    this.submitting = true;
+    this.updateSubmitButton();
+    this.btnSubmit.innerHTML = '<span class="loading loading-spinner loading-sm"></span>';
+
+    try {
+      const formData = new FormData();
+      formData.append('content', content);
+      formData.append('language', language);
+
+      const response = await fetch(this.createUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'X-CSRFToken': this.getCookie('csrftoken') || '' },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to process');
+      }
+
+      if (data.gloss) {
+        // Check again in case of race condition
+        if (this.selected.find(s => s.id === data.gloss.id)) {
+          this.showError('This gloss is already attached.');
+          this.showToast('This gloss is already attached.', 'warning');
+        } else {
+          this.select(data.gloss);
+
+          // Show appropriate toast
+          const message = data.created
+            ? `Created and attached: ${content}`
+            : `Attached existing gloss: ${content}`;
+          this.showToast(message, 'success');
+
+          // Clear input but keep language selection
+          this.query = '';
+          this.input.value = '';
+          this.input.focus();
+        }
+      }
+    } catch (err) {
+      this.showError(err.message);
+      this.showToast(err.message, 'error');
+    } finally {
+      this.submitting = false;
+      this.updateSubmitButton();
+      this.btnSubmit.textContent = 'Attach';
+    }
   }
 
   renderSelectedTable() {
@@ -95,126 +357,11 @@ class RelationSelector {
     });
   }
 
-  handleSearchInput() {
-    this.query = this.searchInput.value;
-
-    // Debounce search
-    clearTimeout(this.searchDebounce);
-    this.searchDebounce = setTimeout(() => {
-      this.search();
-    }, 200);
-  }
-
-  handleSearchFocus() {
-    if (this.results.length > 0) {
-      this.isOpen = true;
-      this.renderSearchResults();
-    }
-  }
-
-  handleSearchBlur() {
-    this.isOpen = false;
-    this.renderSearchResults();
-  }
-
-  handleSearchKeydown(e) {
-    if (!this.isOpen) return;
-
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      this.highlighted = Math.min(this.highlighted + 1, this.results.length - 1);
-      this.renderSearchResults();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      this.highlighted = Math.max(this.highlighted - 1, 0);
-      this.renderSearchResults();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      this.attachHighlighted();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      this.resetSearch();
-    }
-  }
-
-  async search() {
-    const term = this.query.trim();
-    if (!term) {
-      this.results = [];
-      this.isOpen = false;
-      this.renderSearchResults();
-      return;
-    }
-
-    this.loading = true;
-    this.isOpen = true;
-    this.renderSearchResults();
-
-    try {
-      const response = await fetch(`${this.searchUrl}?q=${encodeURIComponent(term)}`, {
-        credentials: 'same-origin'
-      });
-      const data = await response.json();
-      this.results = data.results || [];
-      this.highlighted = 0;
-    } catch (error) {
-      console.error('Search failed:', error);
-      this.results = [];
-    } finally {
-      this.loading = false;
-      this.renderSearchResults();
-    }
-  }
-
-  renderSearchResults() {
-    if (!this.isOpen) {
-      this.resultsContainer.style.display = 'none';
-      return;
-    }
-
-    this.resultsContainer.style.display = 'block';
-
-    if (this.loading) {
-      this.resultsContainer.innerHTML = '<div class="px-3 py-2 text-sm text-light">Searching...</div>';
-      return;
-    }
-
-    if (this.results.length === 0) {
-      this.resultsContainer.innerHTML = '<div class="px-3 py-2 text-sm text-light">No matches.</div>';
-      return;
-    }
-
-    this.resultsContainer.innerHTML = this.results.map((item, idx) => `
-      <button
-        type="button"
-        class="w-full text-left px-3 py-2 hover:bg-base-200 flex justify-between items-center ${idx === this.highlighted ? 'bg-base-200' : ''}"
-        data-select-id="${item.id}"
-      >
-        <span>${this.escapeHtml(item.language_iso)}: ${this.escapeHtml(item.content)}</span>
-        <span class="badge badge-ghost">${this.escapeHtml(item.language_iso)}</span>
-      </button>
-    `).join('');
-
-    // Attach select listeners
-    this.resultsContainer.querySelectorAll('[data-select-id]').forEach((btn, idx) => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.getAttribute('data-select-id'));
-        const item = this.results.find(r => r.id === id);
-        if (item) this.select(item);
-      });
-      btn.addEventListener('mouseenter', () => {
-        this.highlighted = idx;
-        this.renderSearchResults();
-      });
-    });
-  }
-
   select(item) {
     if (!this.selected.find(s => s.id === item.id)) {
       this.selected.push(item);
       this.renderSelectedTable();
     }
-    this.resetSearch();
   }
 
   remove(id) {
@@ -222,84 +369,33 @@ class RelationSelector {
     this.renderSelectedTable();
   }
 
-  attachHighlighted() {
-    if (this.results[this.highlighted]) {
-      this.select(this.results[this.highlighted]);
-    }
+  showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} shadow-lg fixed bottom-4 right-4 w-auto max-w-md z-50 animate-in slide-in-from-bottom`;
+    toast.innerHTML = `
+      <div>
+        <span>${this.escapeHtml(message)}</span>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      toast.classList.add('animate-out', 'slide-out-to-bottom');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
   }
 
-  resetSearch() {
-    this.query = '';
-    this.searchInput.value = '';
-    this.results = [];
-    this.isOpen = false;
-    this.highlighted = 0;
-    this.renderSearchResults();
-  }
+  showError(message) {
+    this.errorDiv.textContent = message;
+    this.errorDiv.style.display = 'block';
 
-  openCreateModal() {
-    this.openCreate = true;
-    this.modal.classList.add('modal-open');
-  }
-
-  closeCreateModal() {
-    this.openCreate = false;
-    this.modal.classList.remove('modal-open');
-    this.newContent = '';
-    this.newLanguage = '';
-    this.newContentInput.value = '';
-    this.newLanguageSelect.value = '';
-    this.createError = '';
-    this.createErrorDiv.style.display = 'none';
-  }
-
-  async createAndAttach() {
-    this.newContent = this.newContentInput.value.trim();
-    this.newLanguage = this.newLanguageSelect.value;
-    this.createError = '';
-
-    if (!this.newContent || !this.newLanguage) {
-      this.createError = 'Content and language are required.';
-      this.createErrorDiv.textContent = this.createError;
-      this.createErrorDiv.style.display = 'block';
-      return;
-    }
-
-    this.creating = true;
-    this.btnSubmit.disabled = true;
-    this.btnSubmit.innerHTML = '<span class="loading loading-spinner loading-sm"></span>';
-
-    try {
-      const formData = new FormData();
-      formData.append('content', this.newContent);
-      formData.append('language', this.newLanguage);
-
-      const response = await fetch(this.createUrl, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'X-CSRFToken': this.getCookie('csrftoken') || '' },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Unable to create');
-      }
-
-      if (data.gloss) {
-        this.select(data.gloss);
-        this.closeCreateModal();
-      }
-    } catch (err) {
-      this.createError = err.message;
-      this.createErrorDiv.textContent = this.createError;
-      this.createErrorDiv.style.display = 'block';
-    } finally {
-      this.creating = false;
-      this.btnSubmit.disabled = false;
-      this.btnSubmit.textContent = 'Create & attach';
-    }
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      this.errorDiv.style.display = 'none';
+    }, 5000);
   }
 
   getCookie(name) {

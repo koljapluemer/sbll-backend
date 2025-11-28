@@ -12,7 +12,7 @@ def situation_update(request, pk):
     languages = Language.objects.order_by("name")
     languages_serialized = serialize_languages(languages)
     gloss_search_url = reverse("api_gloss_search")
-    gloss_create_url = reverse("api_gloss_create")
+    gloss_create_url = reverse("api_gloss_create_or_get")
 
     if request.method == "POST":
         payload, errors = parse_situation_payload(request, instance=situation)

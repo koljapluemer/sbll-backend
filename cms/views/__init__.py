@@ -41,6 +41,7 @@ from .situation import (
 from .api import (
     api_gloss_search,
     api_gloss_create,
+    api_gloss_create_or_get,
 )
 
 __all__ = [
@@ -65,4 +66,5 @@ __all__ = [
     # API
     "api_gloss_search",
     "api_gloss_create",
+    "api_gloss_create_or_get",
 ]

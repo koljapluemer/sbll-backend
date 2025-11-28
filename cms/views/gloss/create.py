@@ -10,7 +10,7 @@ def gloss_create(request):
     languages = Language.objects.order_by("name")
     languages_serialized = serialize_languages(languages)
     gloss_search_url = reverse("api_gloss_search")
-    gloss_create_url = reverse("api_gloss_create")
+    gloss_create_url = reverse("api_gloss_create_or_get")
     empty = {
         "content": "",
         "language": None,
