@@ -42,9 +42,6 @@
         </td>
         <td class="text-right">
           <div class="flex justify-end gap-2">
-            <a href="{% url 'situation_export_form' %}?situation={{ situation.id }}" class="btn btn-ghost btn-xs gap-1">
-              {% lucide "download" class="w-4 h-4" %} Export
-            </a>
             <a href="{% url 'situation_update' situation.id %}" class="btn btn-ghost btn-xs gap-1">
               {% lucide "pencil" class="w-4 h-4" %} Edit
             </a>

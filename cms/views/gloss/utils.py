@@ -160,7 +160,7 @@ def collect_glosses_recursively(situation, native_language_iso, target_language_
     return result_glosses
 
 
-def serialize_gloss_to_jsonl(gloss):
+def serialize_gloss_to_jsonl(gloss, target_language_iso=None):
     """
     Serialize a gloss to a dictionary suitable for JSONL export.
 
@@ -168,6 +168,9 @@ def serialize_gloss_to_jsonl(gloss):
 
     Args:
         gloss: Gloss instance with prefetched relationships
+        target_language_iso: Optional ISO code of target language. If provided,
+                           paraphrased glosses in this language will be filtered
+                           from contains and translations relationships.
 
     Returns:
         Dictionary with gloss data
@@ -181,9 +184,24 @@ def serialize_gloss_to_jsonl(gloss):
             "show_before_solution": note.show_before_solution,
         })
 
-    # Get compound keys for all related glosses
-    contains_keys = [g.get_compound_key() for g in gloss.contains.all()]
-    translation_keys = [g.get_compound_key() for g in gloss.translations.all()]
+    # Get compound keys for all related glosses, filtering paraphrased target lang glosses
+    contains_glosses = gloss.contains.all()
+    translation_glosses = gloss.translations.all()
+
+    if target_language_iso:
+        # Filter out paraphrased glosses in target language
+        contains_keys = [
+            g.get_compound_key() for g in contains_glosses
+            if not (g.language.iso == target_language_iso and g.is_paraphrased())
+        ]
+        translation_keys = [
+            g.get_compound_key() for g in translation_glosses
+            if not (g.language.iso == target_language_iso and g.is_paraphrased())
+        ]
+    else:
+        # No filtering
+        contains_keys = [g.get_compound_key() for g in contains_glosses]
+        translation_keys = [g.get_compound_key() for g in translation_glosses]
 
     return {
         "key": gloss.get_compound_key(),

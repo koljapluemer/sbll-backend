@@ -28,3 +28,11 @@ class Gloss(models.Model):
         Example: "en:hello", "de:hallo"
         """
         return f"{self.language.iso}:{self.content}"
+
+    def is_paraphrased(self):
+        """
+        Checks if this gloss is a paraphrased gloss.
+        Paraphrased glosses have content wrapped in square brackets.
+        Example: "[to say hello]"
+        """
+        return self.content.startswith("[") and self.content.endswith("]")

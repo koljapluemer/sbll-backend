@@ -66,8 +66,15 @@ def situation_download_all(request):
                     situation, native_lang.iso, target_lang.iso
                 )
 
+                # Filter out paraphrased glosses in target language
+                # (native language glosses are kept regardless)
+                filtered_glosses = [
+                    g for g in glosses
+                    if not (g.language.iso == target_lang.iso and g.is_paraphrased())
+                ]
+
                 # Validation Check 2: Must have at least one gloss in each language
-                language_isos = {g.language.iso for g in glosses}
+                language_isos = {g.language.iso for g in filtered_glosses}
                 if (
                     native_lang.iso not in language_isos
                     or target_lang.iso not in language_isos
@@ -76,12 +83,12 @@ def situation_download_all(request):
 
                 # Generate JSONL content
                 jsonl_lines = []
-                for gloss in glosses:
+                for gloss in filtered_glosses:
                     # Prefetch relationships to avoid N+1 queries during serialization
                     gloss.contains.all()
                     gloss.translations.all()
                     gloss.note_set.all()
-                    serialized = serialize_gloss_to_jsonl(gloss)
+                    serialized = serialize_gloss_to_jsonl(gloss, target_language_iso=target_lang.iso)
                     jsonl_lines.append(json.dumps(serialized, ensure_ascii=False))
 
                 jsonl_content = "\n".join(jsonl_lines)
