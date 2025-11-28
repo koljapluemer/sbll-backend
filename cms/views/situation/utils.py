@@ -6,6 +6,8 @@ def parse_situation_payload(request, instance=None):
     errors = []
     situation_id = request.POST.get("id", "").strip()
     gloss_ids = request.POST.getlist("glosses")
+    description_ids = request.POST.getlist("descriptions")
+    image_link = request.POST.get("image_link", "").strip()
 
     if not instance and not situation_id:
         errors.append("ID is required.")
@@ -13,9 +15,12 @@ def parse_situation_payload(request, instance=None):
         errors.append("A situation with this ID already exists.")
 
     glosses = list(Gloss.objects.filter(pk__in=gloss_ids))
+    descriptions = list(Gloss.objects.filter(pk__in=description_ids))
     payload = {
         "id": situation_id if situation_id else (instance.id if instance else ""),
         "glosses": glosses,
+        "descriptions": descriptions,
+        "image_link": image_link,
     }
     return payload, errors
 

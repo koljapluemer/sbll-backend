@@ -12,12 +12,16 @@ def situation_create(request):
     languages_serialized = serialize_languages(languages)
     gloss_search_url = reverse("api_gloss_search")
     gloss_create_url = reverse("api_gloss_create")
-    empty = {"id": "", "glosses": []}
+    empty = {"id": "", "glosses": [], "descriptions": [], "image_link": ""}
     if request.method == "POST":
         payload, errors = parse_situation_payload(request)
         if not errors:
-            situation = Situation.objects.create(id=payload["id"])
+            situation = Situation.objects.create(
+                id=payload["id"],
+                image_link=payload["image_link"] if payload["image_link"] else None
+            )
             situation.glosses.set(payload["glosses"])
+            situation.descriptions.set(payload["descriptions"])
             return redirect("situation_list")
         return render(
             request,
@@ -30,6 +34,7 @@ def situation_create(request):
                 "languages": languages,
                 "languages_serialized": languages_serialized,
                 "glosses_serialized": serialize_glosses(payload["glosses"]),
+                "descriptions_serialized": serialize_glosses(payload["descriptions"]),
                 "gloss_search_url": gloss_search_url,
                 "gloss_create_url": gloss_create_url,
             },
@@ -46,6 +51,7 @@ def situation_create(request):
             "languages": languages,
             "languages_serialized": languages_serialized,
             "glosses_serialized": serialize_glosses(empty["glosses"]),
+            "descriptions_serialized": serialize_glosses(empty["descriptions"]),
             "gloss_search_url": gloss_search_url,
             "gloss_create_url": gloss_create_url,
         },

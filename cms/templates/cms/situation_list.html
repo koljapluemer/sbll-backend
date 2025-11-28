@@ -13,21 +13,25 @@
   <table class="table">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Glosses</th>
-        <th class="text-right">Actions</th>
+        <th></th>
+        <th>Name/ID</th>
+        <th>Top-Level Glosses</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       {% for situation in situations %}
       <tr>
-        <td class="font-mono">{{ situation.id }}</td>
         <td>
-          {% if situation.glosses.all %}
-            {{ situation.glosses.all|join:", " }}
+          {% if situation.image_link %}
+            <img src="{{ situation.image_link }}" alt="Situation image" class="w-12 h-12 object-cover rounded">
           {% else %}
-            <span class="text-light">None</span>
+            <span class="text-light">-</span>
           {% endif %}
+        </td>
+        <td class="font-mono">{{ situation }}</td>
+        <td>
+            {{ situation.glosses.count }}
         </td>
         <td class="text-right">
           <div class="flex justify-end gap-2">
@@ -44,7 +48,7 @@
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="3" class="text-center text-light">No situations yet.</td></tr>
+      <tr><td colspan="5" class="text-center text-light">No situations yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

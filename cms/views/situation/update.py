@@ -18,6 +18,9 @@ def situation_update(request, pk):
         payload, errors = parse_situation_payload(request, instance=situation)
         if not errors:
             situation.glosses.set(payload["glosses"])
+            situation.descriptions.set(payload["descriptions"])
+            situation.image_link = payload["image_link"] if payload["image_link"] else None
+            situation.save()
             return redirect("situation_list")
         return render(
             request,
@@ -30,13 +33,19 @@ def situation_update(request, pk):
                 "languages": languages,
                 "languages_serialized": languages_serialized,
                 "glosses_serialized": serialize_glosses(payload["glosses"]),
+                "descriptions_serialized": serialize_glosses(payload["descriptions"]),
                 "gloss_search_url": gloss_search_url,
                 "gloss_create_url": gloss_create_url,
                 "situation": situation,
             },
         )
 
-    data = {"id": situation.id, "glosses": list(situation.glosses.all())}
+    data = {
+        "id": situation.id,
+        "glosses": list(situation.glosses.all()),
+        "descriptions": list(situation.descriptions.all()),
+        "image_link": situation.image_link or "",
+    }
     return render(
         request,
         "cms/situation_form.html",
@@ -48,6 +57,7 @@ def situation_update(request, pk):
             "languages": languages,
             "languages_serialized": languages_serialized,
             "glosses_serialized": serialize_glosses(data["glosses"]),
+            "descriptions_serialized": serialize_glosses(data["descriptions"]),
             "gloss_search_url": gloss_search_url,
             "gloss_create_url": gloss_create_url,
             "situation": situation,
