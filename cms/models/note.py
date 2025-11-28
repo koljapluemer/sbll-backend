@@ -1,7 +1,8 @@
 from django.db import models
 
+
 class Note(models.Model):
-    gloss = models.ForeignKey(Gloss)
+    gloss = models.ForeignKey("Gloss", on_delete=models.CASCADE)
     note_type = models.CharField(max_length=64)
     content = models.TextField()
     show_before_solution = models.BooleanField(default=False)

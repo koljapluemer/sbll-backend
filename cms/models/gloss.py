@@ -1,8 +1,9 @@
 from django.db import models
 
+
 class Gloss(models.Model):
     content = models.TextField()
-    language = models.ForeignKeyField("Language")
+    language = models.ForeignKey("Language", on_delete=models.CASCADE)
     transcriptions = models.JSONField(default=list)
 
     contains = models.ManyToManyField("self", related_name="contained_by", symmetrical=False, blank=True)
@@ -14,3 +15,5 @@ class Gloss(models.Model):
     collocations = models.ManyToManyField("self", symmetrical=True, blank=True)
 
     # content+language should be unique together
+    class Meta:
+        unique_together = ("content", "language")

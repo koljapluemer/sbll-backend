@@ -1,3 +1,6 @@
+from django.db import models
+
+
 class SpecificSituation(models.Model):
     id = models.CharField(max_length=64, primary_key=True)
 
@@ -6,9 +9,10 @@ class SpecificSituation(models.Model):
 
     image_link = models.URLField(blank=True, null=True)
 
-    target_language = models.ForeignKeyField("Language")
-    native_language = models.ForeignKeyField("Language")
+    target_language = models.ForeignKey("Language", related_name="target_specific_situations", on_delete=models.CASCADE)
+    native_language = models.ForeignKey("Language", related_name="native_specific_situations", on_delete=models.CASCADE)
 
     # use description gloss of language with iso "eng", if not exist, id
     def __str__(self):
-        return self.id
+        english_description = self.descriptions.filter(language__iso="eng").first()
+        return english_description.content if english_description else self.id
