@@ -175,14 +175,7 @@ def serialize_gloss_to_jsonl(gloss, target_language_iso=None):
     Returns:
         Dictionary with gloss data
     """
-    # Get related notes
-    notes = []
-    for note in gloss.note_set.all():
-        notes.append({
-            "type": note.note_type,
-            "content": note.content,
-            "show_before_solution": note.show_before_solution,
-        })
+
 
     # Get compound keys for all related glosses, filtering paraphrased target lang glosses
     contains_glosses = gloss.contains.all()
@@ -210,5 +203,4 @@ def serialize_gloss_to_jsonl(gloss, target_language_iso=None):
         "transcriptions": gloss.transcriptions,
         "contains": contains_keys,
         "translations": translation_keys,
-        "notes": notes,
     }
