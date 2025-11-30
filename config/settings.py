@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -127,3 +128,6 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LUCIDE_ICONS_DIR = BASE_DIR / "lucide_icons"
+
+# AI Configuration
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')

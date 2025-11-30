@@ -1,5 +1,6 @@
 {% extends "cms/base.html" %}
 {% load lucide_tags %}
+{% load static %}
 {% block title %}Glosses | SBLL CMS{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-semibold mb-4">Glosses</h1>
@@ -16,6 +17,7 @@
         <th>Content</th>
         <th>Language</th>
         <th>Transcriptions</th>
+        <th>AI</th>
         <th class="text-right">Actions</th>
       </tr>
     </thead>
@@ -25,6 +27,17 @@
         <td class="max-w-sm">{{ gloss.content }}</td>
         <td>{{ gloss.language }}</td>
         <td>{{ gloss.transcriptions|join:", "|default:"-" }}</td>
+        <td>
+          <div class="dropdown">
+            <button tabindex="0" class="btn btn-ghost btn-xs gap-1">
+              {% lucide "sparkles" class="w-4 h-4" %} Variations
+            </button>
+            <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded border border-base-300 shadow-lg z-10 w-32 p-2">
+              <li><a class="generate-variations" data-gloss-id="{{ gloss.id }}" data-num="3">3 variations</a></li>
+              <li><a class="generate-variations" data-gloss-id="{{ gloss.id }}" data-num="5">5 variations</a></li>
+            </ul>
+          </div>
+        </td>
         <td class="text-right">
           <div class="flex justify-end gap-2">
             <a href="{% url 'gloss_update' gloss.id %}" class="btn btn-ghost btn-xs gap-1">
@@ -37,9 +50,26 @@
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="4" class="text-center text-light">No glosses yet.</td></tr>
+      <tr><td colspan="5" class="text-center text-light">No glosses yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+
+<dialog id="variations-modal" class="modal">
+  <div class="modal-box">
+    <h3 class="font-semibold text-lg mb-4">Generated Variations</h3>
+    <div id="variations-content"></div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn btn-sm">Close</button>
+      </form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
+<script src="{% static 'cms/js/gloss-variations.js' %}"></script>
 {% endblock %}

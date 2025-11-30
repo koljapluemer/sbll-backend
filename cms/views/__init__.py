@@ -44,6 +44,9 @@ from .api import (
     api_gloss_create_or_get,
 )
 
+# AI views
+from .ai.gloss_variations import generate_gloss_variations
+
 __all__ = [
     # Home
     "redirect_home",
@@ -67,4 +70,6 @@ __all__ = [
     "api_gloss_search",
     "api_gloss_create",
     "api_gloss_create_or_get",
+    # AI
+    "generate_gloss_variations",
 ]
