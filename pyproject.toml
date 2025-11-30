@@ -8,4 +8,5 @@ dependencies = [
     "django>=5.2.8",
     "django-lucide-icons>=0.2.2",
     "openai>=1.58.1",
+    "python-dotenv>=1.0.0",
 ]

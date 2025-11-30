@@ -1,0 +1,28 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Variations | SBLL CMS{% endblock %}
+{% block content %}
+<div class="flex items-center gap-2 mb-4">
+  <a href="{% url 'gloss_list' %}" class="btn btn-ghost btn-sm gap-1">
+    {% lucide "arrow-left" class="w-4 h-4" %} Back
+  </a>
+  <h1 class="text-2xl font-semibold">Generated Variations</h1>
+</div>
+
+<div class="grid gap-4">
+  <div class="bg-base-100 border border-base-300 rounded p-4">
+    <div class="text-sm text-light mb-1">Original</div>
+    <div class="text-lg">{{ gloss.content }}</div>
+    <div class="text-sm text-light mt-2">{{ gloss.language }} • {{ num_variations }} variations</div>
+  </div>
+
+  <div class="bg-base-100 border border-base-300 rounded p-4">
+    <div class="text-sm font-semibold mb-2">Variations</div>
+    <ul class="list-disc list-inside space-y-2">
+      {% for variation in variations %}
+      <li>{{ variation }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
