@@ -45,7 +45,7 @@ from .api import (
 )
 
 # AI views
-from .ai.gloss_variations import gloss_variations
+from .ai import gloss_tools, gloss_variations
 
 __all__ = [
     # Home
@@ -71,5 +71,6 @@ __all__ = [
     "api_gloss_create",
     "api_gloss_create_or_get",
     # AI
+    "gloss_tools",
     "gloss_variations",
 ]

@@ -27,14 +27,9 @@
         <td>{{ gloss.language }}</td>
         <td>{{ gloss.transcriptions|join:", "|default:"-" }}</td>
         <td>
-          <div class="flex gap-2">
-            <a href="{% url 'gloss_variations' gloss.id 3 %}" class="btn btn-ghost btn-xs gap-1">
-              {% lucide "sparkles" class="w-4 h-4" %} 3
-            </a>
-            <a href="{% url 'gloss_variations' gloss.id 5 %}" class="btn btn-ghost btn-xs gap-1">
-              {% lucide "sparkles" class="w-4 h-4" %} 5
-            </a>
-          </div>
+          <a href="{% url 'gloss_tools' gloss.id %}" class="btn btn-ghost btn-xs">
+            {% lucide "sparkles" class="w-4 h-4" %}
+          </a>
         </td>
         <td class="text-right">
           <div class="flex justify-end gap-2">

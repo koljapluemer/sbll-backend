@@ -20,5 +20,6 @@ urlpatterns = [
     path("api/glosses/search/", views.api_gloss_search, name="api_gloss_search"),
     path("api/glosses/create/", views.api_gloss_create, name="api_gloss_create"),
     path("api/glosses/create-or-get/", views.api_gloss_create_or_get, name="api_gloss_create_or_get"),
+    path("glosses/<int:pk>/tools/", views.gloss_tools, name="gloss_tools"),
     path("glosses/<int:pk>/variations/<int:num_variations>/", views.gloss_variations, name="gloss_variations"),
 ]
