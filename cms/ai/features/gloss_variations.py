@@ -3,12 +3,13 @@ from cms.ai.providers.openai_provider import OpenAIProvider
 from cms.ai.logging import AIInteraction
 
 
-def generate_variations(gloss_content: str, num_variations: int = 3) -> dict:
+def generate_variations(gloss_content: str, language, num_variations: int = 3) -> dict:
     """
     Generate variations of a gloss sentence.
 
     Args:
         gloss_content: The sentence to generate variations for
+        language: Language object with name, iso, and optional ai_note
         num_variations: Number of variations to generate (3 or 5)
 
     Returns:
@@ -19,9 +20,11 @@ def generate_variations(gloss_content: str, num_variations: int = 3) -> dict:
         model="gpt-4o-mini"
     )
 
-    prompt = f"""Generate exactly {num_variations} variations of the following sentence:
+    prompt = f"""Generate exactly {num_variations} variations of the following sentence in {language.name} ({language.iso}):
 
 "{gloss_content}"
+
+{f"Language-specific context: {language.ai_note}" if language.ai_note else ""}
 
 Create variations that change:
 - Politeness level (more formal or more casual)
@@ -47,11 +50,15 @@ Return ONLY a JSON array of strings, nothing else. Example format:
         feature="gloss_variations",
         input_data={
             "gloss_content": gloss_content,
+            "language_iso": language.iso,
+            "language_name": language.name,
             "num_variations": num_variations,
         },
         logging_data={
             **result["metadata"],
             "num_variations": num_variations,
+            "language_iso": language.iso,
+            "has_ai_note": bool(language.ai_note),
         },
         output_data={
             "variations": variations,

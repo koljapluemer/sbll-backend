@@ -49,3 +49,29 @@
   </table>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const toastMessage = urlParams.get('toast');
+  const toastType = urlParams.get('toast_type') || 'info';
+
+  if (toastMessage) {
+    const escapeHtml = (text) => {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${toastType} shadow-lg fixed bottom-4 right-4 w-auto max-w-md z-50`;
+    toast.innerHTML = `<div><span>${escapeHtml(toastMessage)}</span></div>`;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3000);
+
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+</script>
+{% endblock %}

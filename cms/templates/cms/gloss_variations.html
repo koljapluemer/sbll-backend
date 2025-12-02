@@ -16,13 +16,38 @@
     <div class="text-sm text-light mt-2">{{ gloss.language }} • {{ num_variations }} variations</div>
   </div>
 
-  <div class="bg-base-100 border border-base-300 rounded p-4">
-    <div class="text-sm font-semibold mb-2">Variations</div>
-    <ul class="list-disc list-inside space-y-2">
-      {% for variation in variations %}
-      <li>{{ variation }}</li>
-      {% endfor %}
-    </ul>
-  </div>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+
+    {% if error %}
+    <div class="alert alert-error">
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <div class="bg-base-100 border border-base-300 rounded p-4">
+      <div class="text-sm font-semibold mb-2">Select variations to save</div>
+      <div class="space-y-2">
+        {% for variation in variations %}
+        <fieldset class="fieldset">
+          <label class="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="selected_variations"
+              value="{{ variation }}"
+              class="checkbox checkbox-sm mt-1"
+            />
+            <span>{{ variation }}</span>
+          </label>
+        </fieldset>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary">Save selected variations</button>
+      <a href="{% url 'gloss_list' %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
 </div>
 {% endblock %}
