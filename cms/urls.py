@@ -24,4 +24,5 @@ urlpatterns = [
     path("glosses/<int:pk>/variations/<int:num_variations>/", views.gloss_variations, name="gloss_variations"),
     path("tools/", views.tools_list, name="tools_list"),
     path("tools/untranslated-glosses/", views.tools_untranslated_glosses, name="tools_untranslated_glosses"),
+    path("tools/translate-glosses/", views.tools_translate_glosses, name="tools_translate_glosses"),
 ]

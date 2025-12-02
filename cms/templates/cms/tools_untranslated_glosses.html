@@ -36,34 +36,58 @@
 </div>
 
 {% if glosses is not None %}
-<div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Content</th>
-        <th>Language</th>
-        <th class="text-right">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for gloss in glosses %}
-      <tr>
-        <td class="max-w-sm">{{ gloss.content }}</td>
-        <td>{{ gloss.language }}</td>
-        <td class="text-right">
-          <div class="flex justify-end gap-2">
-            <a href="{% url 'gloss_update' gloss.id %}" class="btn btn-ghost btn-xs gap-1">
-              {% lucide "pencil" class="w-4 h-4" %} Edit
-            </a>
-          </div>
-        </td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="3" class="text-center text-light">No untranslated glosses found.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+<form method="post" action="{% url 'tools_translate_glosses' %}">
+  {% csrf_token %}
+  <input type="hidden" name="native" value="{{ native_iso }}">
+  <input type="hidden" name="lang" value="{{ target_iso }}">
+
+  <div class="flex gap-2 mb-2">
+    <button type="button" id="select-all" class="btn btn-sm btn-ghost">Select All</button>
+    <button type="button" id="deselect-all" class="btn btn-sm btn-ghost">Deselect All</button>
+  </div>
+
+  <div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
+    <table class="table">
+      <thead>
+        <tr>
+          <th class="w-12">
+            <input type="checkbox" id="select-all-checkbox" class="checkbox checkbox-sm">
+          </th>
+          <th>Content</th>
+          <th>Language</th>
+          <th class="text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for gloss in glosses %}
+        <tr>
+          <td>
+            <input type="checkbox" name="gloss_ids" value="{{ gloss.id }}" class="checkbox checkbox-sm gloss-checkbox">
+          </td>
+          <td class="max-w-sm">{{ gloss.content }}</td>
+          <td>{{ gloss.language }}</td>
+          <td class="text-right">
+            <div class="flex justify-end gap-2">
+              <a href="{% url 'gloss_update' gloss.id %}" class="btn btn-ghost btn-xs gap-1">
+                {% lucide "pencil" class="w-4 h-4" %} Edit
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="text-center text-light">No untranslated glosses found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-4">
+    <button type="submit" class="btn btn-primary gap-2">
+      {% lucide "sparkles" class="w-4 h-4" %}
+      <span>Translate with AI</span>
+    </button>
+  </div>
+</form>
 
 {% if page_obj.has_other_pages %}
 <div class="flex justify-center gap-2 mt-4">
@@ -82,4 +106,56 @@
 {% endif %}
 {% endif %}
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Checkbox functionality
+  const selectAllBtn = document.getElementById('select-all');
+  const deselectAllBtn = document.getElementById('deselect-all');
+  const selectAllCheckbox = document.getElementById('select-all-checkbox');
+  const checkboxes = document.querySelectorAll('.gloss-checkbox');
+
+  selectAllBtn?.addEventListener('click', () => {
+    checkboxes.forEach(cb => cb.checked = true);
+    if (selectAllCheckbox) selectAllCheckbox.checked = true;
+  });
+
+  deselectAllBtn?.addEventListener('click', () => {
+    checkboxes.forEach(cb => cb.checked = false);
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+  });
+
+  selectAllCheckbox?.addEventListener('change', (e) => {
+    checkboxes.forEach(cb => cb.checked = e.target.checked);
+  });
+
+  // Toast notification
+  const urlParams = new URLSearchParams(window.location.search);
+  const toastMessage = urlParams.get('toast');
+  const toastType = urlParams.get('toast_type') || 'info';
+
+  if (toastMessage) {
+    const escapeHtml = (text) => {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${toastType} shadow-lg fixed bottom-4 right-4 w-auto max-w-md z-50`;
+    toast.innerHTML = `<div><span>${escapeHtml(toastMessage)}</span></div>`;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3000);
+
+    // Preserve query params except toast
+    const params = new URLSearchParams(window.location.search);
+    params.delete('toast');
+    params.delete('toast_type');
+    const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname;
+    window.history.replaceState({}, '', newUrl);
+  }
+</script>
 {% endblock %}

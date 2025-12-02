@@ -1,0 +1,56 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Review Translations | SBLL CMS{% endblock %}
+{% block content %}
+<div class="flex items-center gap-2 mb-4">
+  <a href="{% url 'tools_untranslated_glosses' %}?native={{ native_iso }}&lang={{ target_iso }}" class="btn btn-ghost btn-sm gap-1">
+    {% lucide "arrow-left" class="w-4 h-4" %} Back
+  </a>
+  <h1 class="text-2xl font-semibold">Review AI Translations</h1>
+</div>
+
+<div class="bg-base-100 border border-base-300 rounded p-4 mb-6">
+  <div class="text-sm text-light mb-1">Translating to</div>
+  <div class="text-lg">{{ target_language.name }} ({{ target_iso }})</div>
+</div>
+
+<form method="post" class="space-y-4">
+  {% csrf_token %}
+
+  {% if error %}
+  <div class="alert alert-error">
+    <span>{{ error }}</span>
+  </div>
+  {% endif %}
+
+  <div class="bg-base-100 border border-base-300 rounded p-4">
+    <div class="text-sm font-semibold mb-2">Select translations to save</div>
+    <div class="space-y-4">
+      {% for item in translations %}
+      <fieldset class="fieldset border-b border-base-300 pb-4 last:border-0 last:pb-0">
+        <label class="flex items-start gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            name="selected_translations"
+            value="{{ item.source_id }}:{{ item.translation }}"
+            class="checkbox checkbox-sm mt-1"
+            checked
+          />
+          <div class="flex-1">
+            <div class="text-sm text-light mb-1">Source</div>
+            <div class="mb-2">{{ item.source_content }}</div>
+            <div class="text-sm text-light mb-1">Translation</div>
+            <div class="font-medium">{{ item.translation }}</div>
+          </div>
+        </label>
+      </fieldset>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="flex gap-2">
+    <button type="submit" class="btn btn-primary">Save selected translations</button>
+    <a href="{% url 'tools_untranslated_glosses' %}?native={{ native_iso }}&lang={{ target_iso }}" class="btn btn-ghost">Cancel</a>
+  </div>
+</form>
+{% endblock %}

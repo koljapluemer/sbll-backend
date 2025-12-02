@@ -19,6 +19,8 @@ def tools_untranslated_glosses(request):
         "target_iso": target_iso,
         "glosses": None,
         "page_obj": None,
+        "toast": request.GET.get("toast", ""),
+        "toast_type": request.GET.get("toast_type", "info"),
     }
 
     # If both parameters are provided, perform the search

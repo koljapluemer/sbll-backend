@@ -51,6 +51,7 @@ from .ai import gloss_tools, gloss_variations
 from .tools import (
     tools_list,
     tools_untranslated_glosses,
+    tools_translate_glosses,
 )
 
 __all__ = [
@@ -82,4 +83,5 @@ __all__ = [
     # Tools
     "tools_list",
     "tools_untranslated_glosses",
+    "tools_translate_glosses",
 ]
