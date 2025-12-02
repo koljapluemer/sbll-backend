@@ -1,0 +1,18 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Tools | SBLL CMS{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-semibold mb-4">Tools</h1>
+<div class="bg-base-100 border border-base-300 rounded">
+  <div class="p-4 border-b border-base-300">
+    <h2 class="font-semibold">Find Untranslated Glosses</h2>
+    <p class="text-sm text-light mt-1">Find glosses that exist in one language but not in another</p>
+  </div>
+  <div class="p-4">
+    <a href="{% url 'tools_untranslated_glosses' %}" class="btn btn-primary btn-sm gap-2">
+      {% lucide "search" class="w-4 h-4" %}
+      <span>Open Tool</span>
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Find Untranslated Glosses | SBLL CMS{% endblock %}
+{% block content %}
+<div class="flex items-center gap-2 mb-4">
+  <a href="{% url 'tools_list' %}" class="btn btn-ghost btn-sm gap-1">
+    {% lucide "arrow-left" class="w-4 h-4" %} Back
+  </a>
+  <h1 class="text-2xl font-semibold">Find Untranslated Glosses</h1>
+</div>
+
+<div class="bg-base-100 border border-base-300 rounded p-4 mb-6">
+  <form method="get" class="space-y-4">
+    <fieldset class="fieldset">
+      <label for="native" class="label">Native language</label>
+      <select id="native" name="native" class="select select-bordered w-full" required>
+        <option value="" disabled {% if not native_iso %}selected{% endif %}>Select native language</option>
+        {% for language in languages %}
+          <option value="{{ language.iso }}" {% if native_iso == language.iso %}selected{% endif %}>{{ language.name }} ({{ language.iso }})</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <fieldset class="fieldset">
+      <label for="lang" class="label">Target language</label>
+      <select id="lang" name="lang" class="select select-bordered w-full" required>
+        <option value="" disabled {% if not target_iso %}selected{% endif %}>Select target language</option>
+        {% for language in languages %}
+          <option value="{{ language.iso }}" {% if target_iso == language.iso %}selected{% endif %}>{{ language.name }} ({{ language.iso }})</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    <div>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+  </form>
+</div>
+
+{% if glosses is not None %}
+<div class="overflow-x-auto bg-base-100 border border-base-300 rounded">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Content</th>
+        <th>Language</th>
+        <th class="text-right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for gloss in glosses %}
+      <tr>
+        <td class="max-w-sm">{{ gloss.content }}</td>
+        <td>{{ gloss.language }}</td>
+        <td class="text-right">
+          <div class="flex justify-end gap-2">
+            <a href="{% url 'gloss_update' gloss.id %}" class="btn btn-ghost btn-xs gap-1">
+              {% lucide "pencil" class="w-4 h-4" %} Edit
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3" class="text-center text-light">No untranslated glosses found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center gap-2 mt-4">
+  {% if page_obj.has_previous %}
+    <a href="?native={{ native_iso }}&lang={{ target_iso }}&page=1" class="btn btn-sm btn-ghost">First</a>
+    <a href="?native={{ native_iso }}&lang={{ target_iso }}&page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-ghost">Previous</a>
+  {% endif %}
+
+  <span class="btn btn-sm btn-ghost no-animation">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+  {% if page_obj.has_next %}
+    <a href="?native={{ native_iso }}&lang={{ target_iso }}&page={{ page_obj.next_page_number }}" class="btn btn-sm btn-ghost">Next</a>
+    <a href="?native={{ native_iso }}&lang={{ target_iso }}&page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-ghost">Last</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endif %}
+
+{% endblock %}

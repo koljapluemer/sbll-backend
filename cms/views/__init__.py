@@ -47,6 +47,12 @@ from .api import (
 # AI views
 from .ai import gloss_tools, gloss_variations
 
+# Tools views
+from .tools import (
+    tools_list,
+    tools_untranslated_glosses,
+)
+
 __all__ = [
     # Home
     "redirect_home",
@@ -73,4 +79,7 @@ __all__ = [
     # AI
     "gloss_tools",
     "gloss_variations",
+    # Tools
+    "tools_list",
+    "tools_untranslated_glosses",
 ]
