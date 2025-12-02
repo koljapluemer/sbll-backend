@@ -26,6 +26,7 @@ from .gloss import (
     gloss_create,
     gloss_update,
     gloss_delete,
+    gloss_download_all,
 )
 
 # Situation views
@@ -67,6 +68,7 @@ __all__ = [
     "gloss_create",
     "gloss_update",
     "gloss_delete",
+    "gloss_download_all",
     # Situation
     "situation_list",
     "situation_create",

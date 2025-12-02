@@ -87,7 +87,12 @@ def situation_download_all(request):
                     # Prefetch relationships to avoid N+1 queries during serialization
                     gloss.contains.all()
                     gloss.translations.all()
-                    gloss.note_set.all()
+                    gloss.near_synonyms.all()
+                    gloss.near_homophones.all()
+                    gloss.clarifies_usage.all()
+                    gloss.to_be_differentiated_from.all()
+                    gloss.collocations.all()
+                    gloss.usage_of_clarified.all()
                     serialized = serialize_gloss_to_jsonl(gloss, target_language_iso=target_lang.iso)
                     jsonl_lines.append(json.dumps(serialized, ensure_ascii=False))
 

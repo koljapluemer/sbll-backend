@@ -12,6 +12,7 @@ urlpatterns = [
     path("glosses/add/", views.gloss_create, name="gloss_create"),
     path("glosses/<int:pk>/edit/", views.gloss_update, name="gloss_update"),
     path("glosses/<int:pk>/delete/", views.gloss_delete, name="gloss_delete"),
+    path("glosses/download-all/", views.gloss_download_all, name="gloss_download_all"),
     path("situations/", views.situation_list, name="situation_list"),
     path("situations/add/", views.situation_create, name="situation_create"),
     path("situations/<str:pk>/edit/", views.situation_update, name="situation_update"),
