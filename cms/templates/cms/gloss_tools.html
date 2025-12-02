@@ -28,4 +28,18 @@
     </a>
   </div>
 </div>
+
+<div class="bg-base-100 border border-base-300 rounded p-4 mt-4">
+  <h2 class="font-semibold mb-4">Generate Example Sentences</h2>
+  <div class="flex gap-3">
+    <a href="{% url 'gloss_example_sentences_select_language' gloss.id 3 %}" class="btn btn-primary">
+      {% lucide "sparkles" class="w-4 h-4" %}
+      Generate 3 Example Sentences
+    </a>
+    <a href="{% url 'gloss_example_sentences_select_language' gloss.id 5 %}" class="btn btn-primary">
+      {% lucide "sparkles" class="w-4 h-4" %}
+      Generate 5 Example Sentences
+    </a>
+  </div>
+</div>
 {% endblock %}

@@ -1,0 +1,77 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Example Sentences | SBLL CMS{% endblock %}
+{% block content %}
+<div class="flex items-center gap-2 mb-4">
+  <a href="{% url 'gloss_list' %}" class="btn btn-ghost btn-sm gap-1">
+    {% lucide "arrow-left" class="w-4 h-4" %} Back
+  </a>
+  <h1 class="text-2xl font-semibold">Generated Example Sentences</h1>
+</div>
+
+<div class="grid gap-4">
+  <div class="bg-base-100 border border-base-300 rounded p-4">
+    <div class="text-sm text-light mb-1">Original Gloss</div>
+    <div class="text-lg">{{ gloss.content }}</div>
+    <div class="text-sm text-light mt-2">{{ gloss.language }} • {{ num_sentences }} example sentences</div>
+  </div>
+
+  <div class="bg-base-100 border border-base-300 rounded p-4">
+    <div class="text-sm text-light mb-1">Save Language</div>
+    <div class="text-base">{{ save_language }}</div>
+    <div class="text-sm text-light mt-1">
+      {% if has_translation %}
+        Sentences will be saved in {{ save_language }} (translated from {{ gloss.language }})
+      {% else %}
+        Sentences will be saved in {{ save_language }} (no translation)
+      {% endif %}
+    </div>
+  </div>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <input type="hidden" name="save_language_iso" value="{{ save_language.iso }}">
+    <input type="hidden" name="source_language_iso" value="{{ source_language.iso }}">
+    <input type="hidden" name="has_translation" value="{{ has_translation|yesno:'true,false' }}">
+    <input type="hidden" name="sentences_data" value="{{ sentences_json }}">
+
+    {% if error %}
+    <div class="alert alert-error">
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <div class="bg-base-100 border border-base-300 rounded p-4">
+      <div class="text-sm font-semibold mb-2">Select example sentences to save</div>
+      <div class="space-y-3">
+        {% for sentence in sentences %}
+        <fieldset class="fieldset">
+          <label class="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              name="selected_sentences"
+              value="{{ forloop.counter0 }}"
+              class="checkbox checkbox-sm mt-1"
+              checked
+            />
+            <div class="flex-1">
+              {% if has_translation and sentence.translation %}
+                <div class="text-sm text-light mb-1">{{ sentence.original }}</div>
+                <div>{{ sentence.translation }}</div>
+              {% else %}
+                <div>{{ sentence.original }}</div>
+              {% endif %}
+            </div>
+          </label>
+        </fieldset>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary">Save selected sentences</button>
+      <a href="{% url 'gloss_list' %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

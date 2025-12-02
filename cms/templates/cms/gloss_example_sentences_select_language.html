@@ -1,0 +1,46 @@
+{% extends "cms/base.html" %}
+{% load lucide_tags %}
+{% block title %}Generate Example Sentences | SBLL CMS{% endblock %}
+{% block content %}
+<div class="flex items-center gap-2 mb-4">
+  <a href="{% url 'gloss_tools' gloss.id %}" class="btn btn-ghost btn-sm gap-1">
+    {% lucide "arrow-left" class="w-4 h-4" %} Back
+  </a>
+  <h1 class="text-2xl font-semibold">Generate Example Sentences</h1>
+</div>
+
+<div class="grid gap-4">
+  <div class="bg-base-100 border border-base-300 rounded p-4">
+    <div class="text-sm text-light mb-1">Original Gloss</div>
+    <div class="text-lg">{{ gloss.content }}</div>
+    <div class="text-sm text-light mt-2">{{ gloss.language }} • Generate {{ num_sentences }} example sentences</div>
+  </div>
+
+  <form method="post" action="{% url 'gloss_example_sentences' gloss.id num_sentences %}" class="space-y-4">
+    {% csrf_token %}
+
+    <div class="bg-base-100 border border-base-300 rounded p-4">
+      <fieldset class="fieldset">
+        <label for="translation_language" class="label">Translation Language</label>
+        <select id="translation_language" name="translation_language" class="select select-bordered w-full" required>
+          <option value="__none__">None (keep in original language)</option>
+          {% for language in languages %}
+            <option value="{{ language.iso }}" {% if language.iso == "eng" %}selected{% endif %}>{{ language.name }} ({{ language.iso }})</option>
+          {% endfor %}
+        </select>
+        <div class="text-sm text-light mt-2">
+          Select a language to translate the example sentences, or choose "None" to keep them in {{ gloss.language }}.
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="flex gap-2">
+      <button type="submit" class="btn btn-primary gap-1">
+        {% lucide "sparkles" class="w-4 h-4" %}
+        Generate Example Sentences
+      </button>
+      <a href="{% url 'gloss_tools' gloss.id %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -45,7 +45,7 @@ from .api import (
 )
 
 # AI views
-from .ai import gloss_tools, gloss_variations
+from .ai import gloss_tools, gloss_variations, gloss_example_sentences_select_language, gloss_example_sentences
 
 # Tools views
 from .tools import (
@@ -80,6 +80,8 @@ __all__ = [
     # AI
     "gloss_tools",
     "gloss_variations",
+    "gloss_example_sentences_select_language",
+    "gloss_example_sentences",
     # Tools
     "tools_list",
     "tools_untranslated_glosses",
